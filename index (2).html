@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#121417"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="icon.png"><title>Gastos</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{--bg:#121417;--c:#1C2025;--l:#2C323A;--t:#EDF0F4;--m:#98A2AE;--a:#5B8CFF;--g:#4FD1A5;--y:#F2B54B;--r:#FF7A6B}
+*{box-sizing:border-box}html,body{margin:0;background:var(--bg);color:var(--t);font:16px Outfit,system-ui,sans-serif}
+#app{max-width:520px;margin:0 auto;min-height:100dvh;padding:env(safe-area-inset-top) 18px 0}
+main{padding:22px 0 130px;display:flex;flex-direction:column;gap:16px}
+h1{margin:0;font-size:28px}h3{margin:0 0 6px}h4{margin:10px 0 0;color:var(--m);font-weight:500}small,.m{color:var(--m);font-size:13px}p{line-height:1.5;color:var(--m)}
+.card{background:var(--c);border-radius:20px;padding:18px;display:flex;flex-direction:column;gap:10px}
+.hero{background:var(--a);color:#0A1020;border-radius:24px;padding:20px;display:flex;flex-direction:column;gap:4px}.hero b{font-size:44px;letter-spacing:-1px}
+.pill{align-self:flex-start;background:#0A1020;border-radius:14px;padding:6px 12px;font-size:13px;color:var(--t)}.pill i{font-style:normal}
+.l{display:flex;justify-content:space-between;gap:8px}.t{height:6px;border-radius:3px;background:var(--l)}.t i{display:block;height:6px;border-radius:3px}
+.bars{display:flex;gap:8px;align-items:flex-end;height:96px}.bd{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:4px;font-size:12px;color:var(--m)}.bd i{width:100%;background:var(--a);border-radius:6px;min-height:3px}.bd.f{opacity:.35}
+input,select{font:inherit;color:var(--t);background:var(--c);border:1px solid var(--l);border-radius:12px;padding:0 14px;min-height:48px;width:100%}input:focus,select:focus,button:focus-visible{outline:2px solid var(--a);outline-offset:2px}
+input.big{font-size:34px;font-weight:700;min-height:64px}.row{display:flex;gap:10px;align-items:center}.row>button{flex:1}.row>.btn2:last-child:not(:only-child){flex:0 0 52px}
+.btn,.btn2,.chip,nav button,.x{font:inherit;min-height:48px;border-radius:14px;border:0;cursor:pointer}.btn{background:var(--a);color:#0A1020;font-weight:700;padding:0 18px}.btn2{background:var(--l);color:var(--t);padding:0 16px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}.chips:empty{display:none}.chip{background:var(--c);color:var(--t);border:1px solid var(--l);padding:0 16px;min-height:44px;border-radius:22px}.chip.on{background:var(--a);color:#0A1020;border-color:var(--a);font-weight:700}
+.ck{display:flex;gap:10px;align-items:center;color:var(--m);font-size:14px}.ck input{width:22px;min-height:22px}
+.mv{display:flex;align-items:center;gap:10px;background:var(--c);border-radius:14px;padding:8px 8px 8px 14px;margin-top:8px}.mv>div{flex:1;display:flex;flex-direction:column}.x{background:none;color:var(--m);width:44px}
+.sob2{display:grid;grid-template-columns:1.3fr 1fr 1fr 44px;gap:6px;align-items:center}
+nav{position:fixed;left:0;right:0;bottom:0;max-width:520px;margin:0 auto;background:var(--bg);border-top:1px solid var(--l);display:flex;justify-content:space-around;align-items:center;padding:8px 12px calc(8px + env(safe-area-inset-bottom))}
+nav button{background:none;color:var(--m);min-width:76px}nav button.on{color:var(--a);font-weight:700}nav .fab{background:var(--a);color:#0A1020;width:56px;height:56px;border-radius:28px;font-size:30px;line-height:1;min-width:0}
+dialog{border:0;border-radius:24px 24px 0 0;background:var(--bg);color:var(--t);width:100%;max-width:520px;margin:auto auto 0;padding:20px;display:none;flex-direction:column;gap:12px}dialog[open]{display:flex}dialog::backdrop{background:#000a}
+#toast{position:fixed;left:16px;right:16px;bottom:96px;max-width:488px;margin:auto;background:var(--l);border-radius:14px;padding:12px 16px;display:none;justify-content:space-between;align-items:center;z-index:9}#toast.show{display:flex}#toast button{background:none;border:0;color:var(--a);font:inherit;font-weight:700;min-height:44px}
+.pin{text-align:center;padding-top:60px}.dots{display:flex;gap:14px;justify-content:center;margin:24px}.dots i{width:16px;height:16px;border-radius:8px;border:2px solid var(--m)}.dots i.on{background:var(--a);border-color:var(--a)}
+.pad{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;max-width:300px;margin:auto}.pad button{font:inherit;font-size:26px;min-height:64px;border-radius:32px;border:0;background:var(--c);color:var(--t)}
+.lnk{background:none;border:0;color:var(--m);font:inherit;min-height:48px;text-decoration:underline}.warn{background:#2A2418;color:var(--y);border-radius:14px;padding:12px 14px;font-size:14px;line-height:1.4}
+</style></head><body>
+<div id="app"></div><dialog id="sheet"></dialog><dialog id="dlg"></dialog><div id="toast" role="status"></div>
+<script>
+const URL_='https://cdqibeqpnzuovzwfdnif.supabase.co/rest/v1/',KEY='sb_publishable_9nuuNP4uQKyceSzVWgQmdQ_hrFWwFzn'; 
+const SB=supabase.createClient(URL_,KEY),$=s=>document.querySelector(s);
+const fm=n=>(n<0?'-':'')+'$'+Math.abs(Math.round(n)).toLocaleString('es-CL');
+const iso=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+const dm=s=>s.split('-').reverse().join('-'),dt=s=>new Date(s+'T12:00'),hoyS=()=>iso(new Date());
+const addD=(s,n)=>{const x=dt(s);x.setDate(x.getDate()+n);return iso(x)},lunesDe=s=>addD(s,-((dt(s).getDay()+6)%7));
+const esc=t=>String(t??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const parseM=t=>String(t||'').replace(/\./g,'').split('+').reduce((a,x)=>a+(parseInt(x)||0),0);
+const COL={v:'var(--g)',y:'var(--y)',r:'var(--r)'},MSG={v:'Vas bien',y:'Ojo con el ritmo',r:'Vas muy rápido'},DIAS=['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'];
+let S={v:'inicio',sobres:[],movs:[],sems:[],frec:[],aj:null,user:null,gs:null},W=null,undo=null,locked=false,PIN='',oc=0;
+const hp=async p=>[...new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode('g:'+S.user.id+p)))].map(x=>x.toString(16).padStart(2,'0')).join('');
+function toast(t,u){const e=$('#toast');e.innerHTML=esc(t)+(u?' <button onclick="undoNow()">Deshacer</button>':'');e.classList.add('show');clearTimeout(toast.t);toast.t=setTimeout(()=>e.classList.remove('show'),5000)}
+function ask(t,v='',m='text'){return new Promise(r=>{const d=$('#dlg');d.innerHTML=`<h3>${t}</h3><input id="aq" inputmode="${m}" value="${esc(v)}"><div class="row"><button class="btn2" onclick="this.closest('dialog').close('')">Cancelar</button><button class="btn" onclick="this.closest('dialog').close($('#aq').value)">Aceptar</button></div>`;d.onclose=()=>r(d.returnValue||null);d.showModal()})}
+/* ---------- datos ---------- */
+async function init(){const{data}=await SB.auth.getSession();S.user=data.session?.user||null;if(!S.user)return draw();locked=!!localStorage.getItem('pin_'+S.user.id);await cargar();if(!S.ch)S.ch=SB.channel('g').on('postgres_changes',{event:'*',schema:'public'},()=>cargar()).subscribe();if(location.hash=='#nuevo'&&!locked&&S.aj?.listo)abrirGasto()}
+async function cargar(){const q=t=>SB.from(t).select();const[a,s,m,w,f]=await Promise.all([q('ajustes').maybeSingle(),q('sobres').eq('activo',true).order('orden'),q('movimientos').order('fecha',{ascending:false}).order('creado',{ascending:false}),q('semanas'),q('frecuentes')]);S.aj=a.data;S.sobres=s.data||[];S.movs=m.data||[];S.sems=w.data||[];S.frec=f.data||[];draw()}
+/* ---------- semana lunes a domingo ---------- */
+function calc(){const hoy=lunesDe(hoyS()),sm=Object.fromEntries(S.sems.map(x=>[x.lunes,x]));
+ const first=[...S.sems.map(x=>x.lunes),...S.movs.map(x=>lunesDe(x.fecha))].sort()[0]||hoy;let carry={},res=null;
+ for(let l=first;l<=hoy;l=addD(l,7)){const fin=addD(l,6),pagado=sm[l]?.pago!=null,so={};let disp=0,gas=0;
+  S.sobres.forEach(b=>{const g=S.movs.filter(m=>m.sobre_id==b.id&&m.fecha>=l&&m.fecha<=fin).reduce((a,m)=>a+m.monto,0),d=(carry[b.id]||0)+(pagado?b.monto:0);so[b.id]={d,g};disp+=d;gas+=g});
+  if(l==hoy)res={l,fin,pagado,pago:sm[l]?.pago,so,disp,gas};
+  S.sobres.forEach(b=>carry[b.id]=b.regla=='pasa'?so[b.id].d-so[b.id].g:0)}
+ return res}
+function sem(g,d,dia){if(d<=0)return g>0?'r':'v';const x=g/d*100-(dia+1)/7*100,a=S.aj?.umbral_amarillo??10,b=S.aj?.umbral_rojo??25;return x<=a?'v':x<=b?'y':'r'}
+/* ---------- vistas ---------- */
+function draw(){const a=$('#app');if(!S.user)return vAuth();if(locked)return vPin();if(!S.aj?.listo)return vWizard();
+ const v={inicio:vInicio,movs:vMovs,aj:vAjustes}[S.v]();
+ a.innerHTML=`<main>${v}</main><nav><button class="${S.v=='inicio'?'on':''}" onclick="ir('inicio')">Inicio</button><button class="${S.v=='movs'?'on':''}" onclick="ir('movs')">Movimientos</button><button class="fab" aria-label="Nuevo gasto" onclick="abrirGasto()">+</button><button class="${S.v=='aj'?'on':''}" onclick="ir('aj')">Ajustes</button></nav>`}
+const ir=v=>{S.v=v;draw();scrollTo(0,0)};
+function vInicio(){const w=calc(),dia=(new Date().getDay()+6)%7,c=sem(w.gas,w.disp,dia);
+ const dias=DIAS.map((n,i)=>({n,v:S.movs.filter(m=>m.fecha==addD(w.l,i)).reduce((a,m)=>a+m.monto,0),f:i>dia})),mx=Math.max(1,...dias.map(x=>x.v));
+ return `<div><small>Semana del ${dm(w.l)} al ${dm(w.fin)}</small><h1>Esta semana</h1></div>
+ <div class="hero"><span>Te quedan</span><b>${fm(w.disp-w.gas)}</b><span>${fm(w.gas)} gastados de ${fm(w.disp)}</span><span class="pill"><i style="color:${COL[c]}">●</i> ${MSG[c]}</span></div>
+ ${w.pagado?`<div class="l m"><span>Pago de la semana: ${fm(w.pago)}</span><button class="lnk" onclick="regPago()">Editar</button></div>`:`<div class="warn">Pago pendiente: sigues con lo que sobró de la semana anterior.<br><button class="btn" style="margin-top:10px" onclick="regPago()">Registrar pago</button></div>`}
+ <div class="card"><div class="bars">${dias.map(x=>`<div class="bd ${x.f?'f':''}"><small>${x.v?fm(x.v):''}</small><i style="height:${Math.round(x.v/mx*60)}px"></i>${x.n}</div>`).join('')}</div></div>
+ ${S.sobres.map(b=>{const o=w.so[b.id]||{d:0,g:0},k=sem(o.g,o.d,dia),p=o.d>0?Math.min(100,o.g/o.d*100):o.g>0?100:0;return `<div class="card"><div class="l"><b>${esc(b.nombre)}</b><span>${fm(o.d-o.g)} libres</span></div><div class="t"><i style="width:${p}%;background:${COL[k]}"></i></div><small>${fm(o.g)} de ${fm(o.d)}</small></div>`}).join('')||'<p>Aún no tienes sobres. Créalos en Ajustes.</p>'}`}
+function vMovs(){let h='<h1>Movimientos</h1>',f='';S.movs.slice(0,80).forEach(m=>{if(m.fecha!=f){f=m.fecha;h+=`<h4>${dm(f)}</h4>`}const b=S.sobres.find(x=>x.id==m.sobre_id);h+=`<div class="mv"><div><b>${esc(m.nota||b?.nombre||'Gasto')}</b><small>${esc(b?.nombre||'Sin sobre')}</small></div><b>${fm(m.monto)}</b><button class="x" aria-label="Borrar gasto" onclick="borra('${m.id}')">✕</button></div>`});return S.movs.length?h:h+'<p>Todavía no hay gastos. Toca + para anotar el primero.</p>'}
+function vAjustes(){const op=(v,t,s)=>`<option value="${v}" ${s==v?'selected':''}>${t}</option>`;
+ return `<h1>Ajustes</h1><div class="card"><b>Sobres</b><small>Nombre · monto semanal · qué hacer con el sobrante</small>${S.sobres.map(b=>`<div class="sob2"><input aria-label="Nombre" value="${esc(b.nombre)}" onchange="upS('${b.id}',{nombre:this.value})"><input aria-label="Monto semanal" inputmode="numeric" value="${b.monto}" onchange="upS('${b.id}',{monto:parseM(this.value)})"><select aria-label="Sobrante" onchange="upS('${b.id}',{regla:this.value})">${op('pasa','Pasa',b.regla)}${op('pierde','Se pierde',b.regla)}</select><button class="x" aria-label="Quitar sobre" onclick="upS('${b.id}',{activo:false})">✕</button></div>`).join('')}<button class="btn2" onclick="nuevoSobre()">+ Nuevo sobre</button></div>
+ <div class="card"><b>Accesos rápidos</b>${S.frec.map(f=>`<div class="l"><span>${esc(f.nombre)} <small>${f.monto!=null?fm(f.monto):'monto variable'}</small></span><button class="x" aria-label="Quitar acceso" onclick="delF('${f.id}')">✕</button></div>`).join('')||'<small>Los creas al anotar un gasto.</small>'}</div>
+ <div class="card"><b>Semáforo</b><small>Amarillo desde (puntos sobre el ritmo) · rojo desde</small><div class="row"><input inputmode="numeric" value="${S.aj.umbral_amarillo}" onchange="upA({umbral_amarillo:+this.value})"><input inputmode="numeric" value="${S.aj.umbral_rojo}" onchange="upA({umbral_rojo:+this.value})"></div></div>
+ <button class="btn2" onclick="cambiaPin()">Cambiar PIN</button><button class="btn2" onclick="tour()">Cómo funciona</button><button class="lnk" onclick="salir()">Cerrar sesión</button>`}
+/* ---------- acciones ---------- */
+async function upS(id,o){await SB.from('sobres').update(o).eq('id',id);cargar()}
+async function upA(o){await SB.from('ajustes').update(o).eq('user_id',S.user.id);cargar()}
+async function delF(id){await SB.from('frecuentes').delete().eq('id',id);cargar()}
+async function nuevoSobre(){const n=await ask('Nombre del sobre');if(n){await SB.from('sobres').insert({nombre:n.trim(),orden:S.sobres.length});cargar()}}
+async function regPago(){const l=lunesDe(hoyS()),v=await ask('¿Cuánto te pagaron esta semana?',S.sems.find(x=>x.lunes==l)?.pago??S.aj.pago_tipico??'','numeric');if(v==null)return;await SB.from('semanas').upsert({user_id:S.user.id,lunes:l,pago:parseM(v)},{onConflict:'user_id,lunes'});cargar()}
+async function borra(id){undo=S.movs.find(x=>x.id==id);await SB.from('movimientos').delete().eq('id',id);toast('Gasto borrado',1);cargar()}
+async function undoNow(){if(!undo)return;const{id,monto,fecha,sobre_id,nota}=undo;undo=null;$('#toast').classList.remove('show');await SB.from('movimientos').insert({id,monto,fecha,sobre_id,nota});cargar()}
+async function cambiaPin(){const a=await ask('Nuevo PIN (6 dígitos)','','numeric');if(!/^\d{6}$/.test(a||''))return toast('El PIN debe tener 6 dígitos');localStorage.setItem('pin_'+S.user.id,await hp(a));toast('PIN actualizado')}
+async function salir(){if(S.user)localStorage.removeItem('pin_'+S.user.id);await SB.auth.signOut();location.reload()}
+function tour(){const d=$('#dlg');d.innerHTML=`<h3>Cómo funciona</h3><p>Tu semana va de lunes a domingo. Cada semana registras tu pago y se reparte en sobres como Comida o Transporte.</p><p>Cada gasto sale de un sobre. El semáforo compara lo que gastaste con los días que van de la semana.</p><p>Si el pago se atrasa, sigues con lo que te sobró. El sobrante pasa a la semana siguiente o se pierde, según cada sobre.</p><button class="btn" onclick="this.closest('dialog').close()">Entendido</button>`;d.onclose=null;d.showModal()}
+/* ---------- nuevo gasto ---------- */
+function sugerir(){const h=new Date().getHours(),c={};S.movs.forEach(m=>{if(m.sobre_id&&Math.abs(new Date(m.creado).getHours()-h)<=1)c[m.sobre_id]=(c[m.sobre_id]||0)+1});return Object.keys(c).sort((a,b)=>c[b]-c[a])[0]||S.sobres[0]?.id}
+function abrirGasto(){const d=$('#sheet');if(!S.sobres.length){ir('aj');return toast('Primero crea un sobre')}
+ d.innerHTML=`<h3>Nuevo gasto</h3><div class="chips">${S.frec.map(f=>`<button class="chip" onclick="usaFrec('${f.id}')">${esc(f.nombre)}${f.monto!=null?' · '+fm(f.monto):''}</button>`).join('')}</div>
+ <div class="row"><input id="gm" class="big" inputmode="numeric" placeholder="$0" autocomplete="off" aria-label="Monto"><button class="btn2" aria-label="Sumar otro monto" onclick="$('#gm').value+='+';$('#gm').focus()">+</button></div><div id="rec" class="chips"></div>
+ <div id="gs" class="chips">${S.sobres.map(b=>`<button class="chip" data-id="${b.id}" onclick="selSobre('${b.id}')">${esc(b.nombre)}</button>`).join('')}</div>
+ <input id="gn" placeholder="Nota (opcional)" list="nl" oninput="onNota()" autocomplete="off" aria-label="Nota"><datalist id="nl">${[...new Set(S.movs.map(m=>m.nota).filter(Boolean))].slice(0,30).map(n=>`<option value="${esc(n)}">`).join('')}</datalist>
+ <input id="gf" type="date" value="${hoyS()}" aria-label="Fecha"><label class="ck"><input type="checkbox" id="gq"> Guardar como acceso rápido</label><label class="ck"><input type="checkbox" id="gx"> Siempre cuesta lo mismo</label>
+ <div class="row"><button class="btn2" onclick="$('#sheet').close()">Cancelar</button><button class="btn" onclick="guardaG()">Guardar gasto</button></div>`;
+ selSobre(sugerir());d.showModal();setTimeout(()=>$('#gm').focus(),60)}
+function selSobre(id){S.gs=id;document.querySelectorAll('#gs .chip').forEach(x=>x.classList.toggle('on',x.dataset.id==id));const n=$('#gn').value.trim().toLowerCase(),L=S.movs.filter(m=>n?(m.nota||'').toLowerCase()==n:m.sobre_id==id);
+ $('#rec').innerHTML=[...new Set(L.map(m=>m.monto))].slice(0,3).map(v=>`<button class="chip" onclick="$('#gm').value=${v}">${fm(v)}</button>`).join('')}
+function onNota(){const n=$('#gn').value.trim().toLowerCase(),m=n&&S.movs.find(x=>(x.nota||'').toLowerCase()==n&&x.sobre_id);selSobre(m?m.sobre_id:S.gs)}
+function usaFrec(id){const f=S.frec.find(x=>x.id==id);$('#gn').value=f.nombre;selSobre(f.sobre_id);if(f.monto!=null)$('#gm').value=f.monto;$('#gm').focus()}
+async function guardaG(){const monto=parseM($('#gm').value),nota=$('#gn').value.trim();if(!monto||!S.gs)return toast('Falta el monto o el sobre');
+ const{error}=await SB.from('movimientos').insert({monto,nota:nota||null,sobre_id:S.gs,fecha:$('#gf').value||hoyS()});if(error)return toast(error.message);
+ if($('#gq').checked)await SB.from('frecuentes').insert({nombre:nota||S.sobres.find(b=>b.id==S.gs).nombre,sobre_id:S.gs,monto:$('#gx').checked?monto:null});
+ $('#sheet').close();toast('Gasto guardado');cargar()}
+/* ---------- acceso, PIN y asistente ---------- */
+function vAuth(){$('#app').innerHTML=`<main style="padding-top:60px"><h1>Gastos</h1><p>Entra o crea tu cuenta para sincronizar el iPhone y el computador.</p><input id="em" type="email" placeholder="Correo" autocomplete="email" aria-label="Correo"><input id="pw" type="password" placeholder="Contraseña" autocomplete="current-password" aria-label="Contraseña"><button class="btn" onclick="entrar(false)">Entrar</button><button class="btn2" onclick="entrar(true)">Crear cuenta</button></main>`}
+async function entrar(reg){const c={email:$('#em').value,password:$('#pw').value},r=reg?await SB.auth.signUp(c):await SB.auth.signInWithPassword(c);if(r.error)return toast(r.error.message);if(reg&&!r.data.session)return toast('Revisa tu correo para confirmar la cuenta');init()}
+function vPin(){$('#app').innerHTML=`<div class="pin"><h2>Ingresa tu PIN</h2><div class="dots">${[0,1,2,3,4,5].map(i=>`<i class="${i<PIN.length?'on':''}"></i>`).join('')}</div><div class="pad">${[1,2,3,4,5,6,7,8,9,'',0,'⌫'].map(k=>`<button ${k===''?'disabled style="visibility:hidden"':''} onclick="tecla('${k}')">${k}</button>`).join('')}</div><button class="lnk" onclick="salir()">Olvidé mi PIN (cerrar sesión)</button></div>`}
+async function tecla(k){if(k==='⌫')PIN=PIN.slice(0,-1);else if(PIN.length<6)PIN+=k;vPin();if(PIN.length==6){const ok=await hp(PIN)==localStorage.getItem('pin_'+S.user.id);PIN='';if(ok){locked=false;draw()}else{toast('PIN incorrecto');vPin()}}}
+function vWizard(){W=W||{p:0,pago:'',pagoSem:'',pin1:'',pin2:'',sobres:['Comida','Transporte','Ocio','Imprevistos'].map(n=>({n,m:''}))};const p=W.p;let h='';
+ if(p==0)h=`<h1>Bienvenido</h1><p>Esta app lleva tu plata por semana, de lunes a domingo. Cada semana registras tu pago y se reparte en sobres. Cada gasto sale de un sobre y el semáforo te avisa si vas muy rápido.</p><p>Vamos a dejarla lista en 3 pasos.</p>`;
+ if(p==1)h=`<h1>Tu pago y tus sobres</h1><p>Escribe cuánto te pagan normalmente y cuánto quieres para cada sobre por semana. Podrás cambiarlo después en Ajustes.</p><input inputmode="numeric" placeholder="Pago semanal típico" value="${esc(W.pago)}" oninput="W.pago=this.value" aria-label="Pago semanal típico">${W.sobres.map((s,i)=>`<div class="row"><input value="${esc(s.n)}" oninput="W.sobres[${i}].n=this.value" aria-label="Nombre del sobre"><input inputmode="numeric" placeholder="$ semanal" value="${esc(s.m)}" oninput="W.sobres[${i}].m=this.value" aria-label="Monto semanal"></div>`).join('')}`;
+ if(p==2)h=`<h1>Tu PIN</h1><p>Elige un PIN de 6 dígitos para abrir la app. Se guarda solo en este dispositivo.</p><input type="password" inputmode="numeric" maxlength="6" placeholder="PIN de 6 dígitos" value="${esc(W.pin1)}" oninput="W.pin1=this.value" aria-label="PIN"><input type="password" inputmode="numeric" maxlength="6" placeholder="Repite el PIN" value="${esc(W.pin2)}" oninput="W.pin2=this.value" aria-label="Repite el PIN">`;
+ if(p==3)h=`<h1>Última cosa</h1><p>Si ya te pagaron esta semana, anótalo ahora. Si no, déjalo vacío: la semana queda en "pago pendiente".</p><input inputmode="numeric" placeholder="Pago de esta semana (opcional)" value="${esc(W.pagoSem)}" oninput="W.pagoSem=this.value" aria-label="Pago de esta semana">`;
+ $('#app').innerHTML=`<main style="padding-top:40px">${h}<div class="row">${p?'<button class="btn2" onclick="W.p--;vWizard()">Atrás</button>':''}<button class="btn" onclick="wNext()">${p==3?'Terminar':'Siguiente'}</button></div></main>`}
+function wNext(){if(W.p==2&&!(/^\d{6}$/.test(W.pin1)&&W.pin1==W.pin2))return toast('Los dos PIN deben ser iguales y de 6 dígitos');if(W.p==3)return wFin();W.p++;vWizard()}
+async function wFin(){const u=S.user.id;await SB.from('ajustes').upsert({user_id:u,pago_tipico:parseM(W.pago),listo:true});
+ if(!S.sobres.length)await SB.from('sobres').insert(W.sobres.filter(x=>x.n.trim()).map((x,i)=>({nombre:x.n.trim(),monto:parseM(x.m),orden:i})));
+ localStorage.setItem('pin_'+u,await hp(W.pin1));const p=parseM(W.pagoSem);if(p)await SB.from('semanas').upsert({user_id:u,lunes:lunesDe(hoyS()),pago:p},{onConflict:'user_id,lunes'});W=null;await cargar()}
+document.addEventListener('visibilitychange',()=>{if(document.hidden)oc=Date.now();else if(S.user&&oc&&Date.now()-oc>30000&&localStorage.getItem('pin_'+S.user.id)){locked=true;draw()}});
+init();
+</script></body></html>
