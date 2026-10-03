@@ -33,7 +33,7 @@ dialog{border:0;border-radius:24px 24px 0 0;background:var(--bg);color:var(--t);
 </style></head><body>
 <div id="app"></div><dialog id="sheet"></dialog><dialog id="dlg"></dialog><div id="toast" role="status"></div>
 <script>
-const URL_='https://cdqibeqpnzuovzwfdnif.supabase.co/rest/v1/',KEY='sb_publishable_9nuuNP4uQKyceSzVWgQmdQ_hrFWwFzn'; 
+const URL_='https://cdqibeqpnzuovzwfdnif.supabase.co',KEY='sb_publishable_9nuuNP4uQKyceSzVWgQmdQ_hrFWwFzn'; 
 const SB=supabase.createClient(URL_,KEY),$=s=>document.querySelector(s);
 const fm=n=>(n<0?'-':'')+'$'+Math.abs(Math.round(n)).toLocaleString('es-CL');
 const iso=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
