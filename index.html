@@ -30,6 +30,15 @@ dialog{border:0;border-radius:24px 24px 0 0;background:var(--bg);color:var(--t);
 .pin{text-align:center;padding-top:60px}.dots{display:flex;gap:14px;justify-content:center;margin:24px}.dots i{width:16px;height:16px;border-radius:8px;border:2px solid var(--m)}.dots i.on{background:var(--a);border-color:var(--a)}
 .pad{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;max-width:300px;margin:auto}.pad button{font:inherit;font-size:26px;min-height:64px;border-radius:32px;border:0;background:var(--c);color:var(--t)}
 .lnk{background:none;border:0;color:var(--m);font:inherit;min-height:48px;text-decoration:underline}.warn{background:#2A2418;color:var(--y);border-radius:14px;padding:12px 14px;font-size:14px;line-height:1.4}
+ @media(min-width:900px){
+#app,nav{max-width:1120px}
+main.v-movs,main.v-aj{max-width:720px;margin:0 auto;width:100%}
+main.v-inicio{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;align-items:stretch}
+.v-inicio>div:first-child{grid-column:1/-1}
+.v-inicio>.hero{grid-column:span 2}
+.v-inicio>.l.m,.v-inicio>.warn{grid-column:3;align-self:start}
+.v-inicio>.card:has(.bars){grid-column:1/-1}
+}
 </style></head><body>
 <div id="app"></div><dialog id="sheet"></dialog><dialog id="dlg"></dialog><div id="toast" role="status"></div>
 <script>
@@ -61,7 +70,7 @@ function sem(g,d,dia){if(d<=0)return g>0?'r':'v';const x=g/d*100-(dia+1)/7*100,a
 /* ---------- vistas ---------- */
 function draw(){const a=$('#app');if(!S.user)return vAuth();if(locked)return vPin();if(!S.aj?.listo)return vWizard();
  const v={inicio:vInicio,movs:vMovs,aj:vAjustes}[S.v]();
- a.innerHTML=`<main>${v}</main><nav><button class="${S.v=='inicio'?'on':''}" onclick="ir('inicio')">Inicio</button><button class="${S.v=='movs'?'on':''}" onclick="ir('movs')">Movimientos</button><button class="fab" aria-label="Nuevo gasto" onclick="abrirGasto()">+</button><button class="${S.v=='aj'?'on':''}" onclick="ir('aj')">Ajustes</button></nav>`}
+ a.innerHTML=`<main class="v-${S.v}">${v}</main><nav><button class="${S.v=='inicio'?'on':''}" onclick="ir('inicio')">Inicio</button><button class="${S.v=='movs'?'on':''}" onclick="ir('movs')">Movimientos</button><button class="fab" aria-label="Nuevo gasto" onclick="abrirGasto()">+</button><button class="${S.v=='aj'?'on':''}" onclick="ir('aj')">Ajustes</button></nav>`}
 const ir=v=>{S.v=v;draw();scrollTo(0,0)};
 function vInicio(){const w=calc(),dia=(new Date().getDay()+6)%7,c=sem(w.gas,w.disp,dia);
  const dias=DIAS.map((n,i)=>({n,v:S.movs.filter(m=>m.fecha==addD(w.l,i)).reduce((a,m)=>a+m.monto,0),f:i>dia})),mx=Math.max(1,...dias.map(x=>x.v));
