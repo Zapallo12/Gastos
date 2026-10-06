@@ -133,4 +133,6 @@ async function wFin(){const u=S.user.id;await SB.from('ajustes').upsert({user_id
  localStorage.setItem('pin_'+u,await hp(W.pin1));const p=parseM(W.pagoSem);if(p)await SB.from('semanas').upsert({user_id:u,lunes:lunesDe(hoyS()),pago:p},{onConflict:'user_id,lunes'});W=null;await cargar()}
 document.addEventListener('visibilitychange',()=>{if(document.hidden)oc=Date.now();else if(S.user&&oc&&Date.now()-oc>30000&&localStorage.getItem('pin_'+S.user.id)){locked=true;draw()}});
 init();
-</script></body></html>
+ 
+</script>
+<script src="etapa2.js"></script></body></html></body></html>
