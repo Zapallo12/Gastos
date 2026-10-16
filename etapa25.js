@@ -2,7 +2,7 @@
 const st2=document.createElement('style');st2.textContent=`#app{padding-top:0}main{padding:22px 0 48px}#toast{bottom:24px}
 nav{position:sticky;top:0;bottom:auto;left:auto;right:auto;max-width:none;width:auto;margin:0 -18px;padding:calc(env(safe-area-inset-top) + 8px) 18px 8px;border-top:0;border-bottom:1px solid var(--l);justify-content:flex-start;gap:8px;z-index:5}
 nav .brand{display:none}nav .tabs{display:flex;gap:2px;flex:1;min-width:0;overflow-x:auto}
-nav .tabs button{flex:none;min-width:0;padding:0 8px;font-size:12px;min-height:44px;color:var(--m);background:none;border-radius:0;border-bottom:2px solid transparent}
+nav .tabs button{flex:none;min-width:0;padding:0 6px;font-size:12px;min-height:44px;color:var(--m);background:none;border-radius:0;border-bottom:2px solid transparent}
 nav .tabs button.on{color:var(--a);font-weight:700;border-bottom-color:var(--a)}
 nav .add{flex:none;margin-left:auto;min-width:44px;min-height:44px;padding:0 12px;border-radius:22px;background:var(--a);color:#0A1020;font:700 15px Outfit,sans-serif;display:flex;align-items:center;justify-content:center;gap:6px}
 nav .add .plus{font-size:26px;line-height:1}nav .add .txt{display:none}
@@ -22,14 +22,14 @@ const chipsC=(sel,fn,sa)=>S.cuentas.filter(c=>!(sa&&c.tipo=='ahorro')).map(c=>`<
 const marca=(box,id)=>document.querySelectorAll(box+' .chip').forEach(x=>x.classList.toggle('on',x.dataset.c==id));
 /* ---- pantallas ---- */
 draw=function(){const a=$('#app');if(!S.user)return vAuth();if(locked)return vPin();if(!S.aj?.listo)return vWizard();
- const v={inicio:vInicio,fijos:vFijos,cal:vCal,movs:vMovs,aj:vAjustes,plata:vPlata}[S.v](),T=[['inicio','Inicio'],['fijos','Fijos'],['cal','Calendario'],['movs','Gastos'],['aj','Ajustes']];
+ const v={inicio:vInicio,fijos:vFijos,cal:vCal,movs:vMovs,aj:vAjustes,plata:vPlata,metas:typeof vMetas=='function'?vMetas:vInicio}[S.v](),T=[['inicio','Inicio'],['fijos','Fijos'],['metas','Metas'],['cal','Calendario'],['movs','Gastos'],['aj','Ajustes']];
  a.innerHTML=`<nav><span class="brand">Gastos</span><div class="tabs">${T.map(t=>`<button class="${S.v==t[0]||(t[0]=='inicio'&&S.v=='plata')?'on':''}" onclick="ir('${t[0]}')">${t[1]}</button>`).join('')}</div><button class="add" aria-label="Anotar gastos" onclick="abrirGasto()"><span class="plus">+</span><span class="txt">Anotar gastos</span></button></nav><main class="v-${S.v}">${v}<button class="help" aria-label="Ayuda" onclick="ayuda()">?</button></main>`};
 const _v2=vInicio;vInicio=function(){let h=_v2();const C=S.cuentas||[],p=plata();
  const card=C.length?`<button class="card" style="grid-column:1/-1;text-align:left;border:0;color:inherit;font:inherit;cursor:pointer" onclick="ir('plata')"><span class="m">Mi plata · toca para ver tus cuentas</span><div class="l"><span>Libre de verdad</span><b class="big3">${fm(p.libre)}</b></div><small>Para gastar ${fm(p.gastar)} · Ahorro ${fm(p.ahorro)}${p.deuda?` · Debes ${fm(p.deuda)}`:''}</small></button>`:`<button class="warn" style="grid-column:1/-1;text-align:left;border:0;font:inherit;cursor:pointer" onclick="ir('plata')">Aún no anotas dónde tienes tu plata. Toca aquí para crear tus cuentas.</button>`;
  return h.replace('</h1></div>','</h1></div>'+card)};
 function vPlata(){const C=S.cuentas;if(!C.length)return `<h1>Mi plata</h1><p>Aquí anotas dónde tienes tu plata: efectivo, bancos, ahorro y crédito. Así la app sabe de dónde sale cada gasto y cuánto tienes de verdad.</p><button class="btn" onclick="semilla()">Crear mis cuentas</button><button class="btn2" onclick="nuevaCuenta()">Crear una cuenta a mano</button>`;
  const p=plata(),sa=semAhorro(),N=id=>esc(S.cuentas.find(c=>c.id==id)?.nombre||'Cuenta quitada');
- return `<h1>Mi plata</h1><div class="hero"><span>Plata libre de verdad</span><b>${fm(p.libre)}</b><span>Para gastar ${fm(p.gastar)} − apartado para fijos y crédito ${fm(p.apart)}</span></div>
+ return `<h1>Mi plata</h1><div class="hero"><span>Plata libre de verdad</span><b>${fm(p.libre)}</b><span>Para gastar ${fm(p.gastar)} − apartado para fijos, crédito y metas ${fm(p.apart)}</span></div>
  ${C.map(c=>{const s=saldoC(c);return `<div class="card"><div class="l"><b>${esc(c.nombre)}</b><small>${TIPOS[c.tipo]}</small></div><b class="big3">${fm(s)}</b>${c.tipo=='credito'?`<small>Debes ${fm(s)}${c.cupo?` · cupo disponible ${fm(c.cupo-s)} de ${fm(c.cupo)}`:''}</small>`:''}<div class="r2"><button class="btn2" onclick="corrige('${c.id}')">Corregir saldo</button><button class="btn2" onclick="nuevaCuenta('${c.id}')">Editar</button></div></div>`}).join('')}
  ${p.ahorro>0&&sa?`<div class="card"><small>Tu ahorro (${fm(p.ahorro)}) cubre ${sa.toFixed(1)} semanas de gasto, según tu promedio de las últimas 4 semanas.</small></div>`:''}
  <div class="r2"><button class="btn" onclick="traspaso()">Traspaso</button><button class="btn2" onclick="nuevaCuenta()">+ Cuenta</button></div>
