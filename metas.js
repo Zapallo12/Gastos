@@ -1,6 +1,4 @@
-/* Gastos · Metas, gastos fuera del presupuesto semanal y sobres nuevos que empiezan en 0. Se carga después de credito.js. */
 const _cg=cargar;cargar=async function(){const m=await SB.from('metas').select().order('fecha',{ascending:true,nullsFirst:false});S.metas=m.data||[];await _cg()};
-/* ---- sobres: cada uno empieza en su semana y los cambios de monto no reescriben el pasado ---- */
 function montoEn(b,l){const h=b.extra?.hist;if(!h||!h.length)return b.monto;let m=h[0].m;for(const x of h)if(!x.d||x.d<=l)m=x.m;return m}
 calc=function(){const hoy=lunesDe(hoyS()),sm=Object.fromEntries(S.sems.map(x=>[x.lunes,x])),first=[...S.sems.map(x=>x.lunes),...S.movs.map(x=>lunesDe(x.fecha))].sort()[0]||hoy;let carry={},res=null;
  for(let l=first;l<=hoy;l=addD(l,7)){const fin=addD(l,6),pagado=sm[l]?.pago!=null,so={};let disp=0,gas=0;
@@ -10,7 +8,6 @@ calc=function(){const hoy=lunesDe(hoyS()),sm=Object.fromEntries(S.sems.map(x=>[x
  return res};
 nuevoSobre=async function(){const n=await ask('Nombre del sobre');if(n){const{error}=await SB.from('sobres').insert({nombre:n.trim(),orden:S.sobres.length,desde:lunesDe(hoyS())});if(error)return toast(error.message);cargar()}};
 const _upS=upS;upS=async function(id,o){const b=S.sobres.find(x=>x.id==id);if(b&&o.monto!==undefined&&o.monto!==b.monto){const l=lunesDe(hoyS()),h=(b.extra?.hist||[{d:null,m:b.monto}]).filter(x=>x.d!=l);h.push({d:l,m:o.monto});o={...o,extra:{...(b.extra||{}),hist:h}}}await SB.from('sobres').update(o).eq('id',id);cargar()};
-/* ---- gastos que no cuentan para el presupuesto semanal ---- */
 const _ag2=abrirGasto;abrirGasto=function(){_ag2();if(!$('#sheet').open)return;$('#gf').insertAdjacentHTML('beforebegin',`<label class="ck"><input type="checkbox" id="gx2" onchange="$('#gs').style.opacity=this.checked?.35:1"> No cuenta para mi presupuesto semanal (gasto extraordinario)</label>`)};
 guardaG=async function(){const monto=parseM($('#gm').value),nota=$('#gn').value.trim(),fuera=$('#gx2')?.checked;if(!monto||(!S.gs&&!fuera))return toast('Falta el monto o el sobre');
  const o={monto,nota:nota||null,sobre_id:fuera?null:S.gs,fecha:$('#gf').value||hoyS()};if(fuera)o.extra={fuera:true};if(S.cuentas.length&&S.cp){o.cuenta_id=S.cp;recuerda(S.cp)}
@@ -18,7 +15,6 @@ guardaG=async function(){const monto=parseM($('#gm').value),nota=$('#gn').value.
  if(!fuera&&$('#gq').checked)await SB.from('frecuentes').insert({nombre:nota||S.sobres.find(b=>b.id==S.gs).nombre,sobre_id:S.gs,monto:$('#gx').checked?monto:null});
  $('#sheet').close();toast('Gasto guardado');cargar()};
 const _vm=vMovs;vMovs=function(){return _vm().split('<small>Sin sobre</small>').join('<small>Fuera del presupuesto semanal</small>')};
-/* ---- metas ---- */
 const reunidoMeta=m=>S.aportes.filter(a=>a.meta_id==m.id).reduce((a,x)=>a+x.monto,0);
 const _pl=plata;plata=function(){const p=_pl(),a=(S.metas||[]).filter(m=>m.activa&&!m.comprada).reduce((s,m)=>s+reunidoMeta(m),0);p.apart+=a;p.libre-=a;return p};
 function vMetas(){const M=(S.metas||[]).filter(m=>m.activa),act=M.filter(m=>!m.comprada),done=M.filter(m=>m.comprada),lun=lunesDe(hoyS()),fin=addD(lun,6);
@@ -36,4 +32,11 @@ const selMC=id=>{S.cm=id;marca('#mc',id)};
 async function pagaMeta(){const m=S.metas.find(x=>x.id==S.mid),monto=parseM($('#mp').value);if(!monto)return toast('Escribe cuánto pagaste');const o={monto,nota:'Meta: '+m.nombre,fecha:hoyS(),sobre_id:null,extra:{meta_id:m.id}};if(S.cuentas.length&&S.cm){o.cuenta_id=S.cm;recuerda(S.cm)}
  const{error}=await SB.from('movimientos').insert(o);if(error)return toast(error.message);await SB.from('metas').update({comprada:true}).eq('id',m.id);$('#dlg').close();toast('Meta cumplida');cargar()}
 const _ay3=ayuda;ayuda=function(){if(S.v!='metas')return _ay3();const d=$('#dlg');d.innerHTML=`<h3>Metas</h3><p>Crea una meta con su costo y, si quieres, una fecha: la app te sugiere cuánto apartar cada semana. Lo que apartas baja tu plata libre, pero no sale de ninguna cuenta. Cuando la compras, toca Comprar: se anota como gasto fuera de tu presupuesto semanal.</p><button class="btn" onclick="this.closest('dialog').close()">Entendido</button>`;d.onclose=null;d.showModal()};
+const _vi5=vInicio;vInicio=function(){return _vi5().replace('<div class="card"><div class="bars">','<button class="btn2" style="grid-column:1/-1" onclick="ingresoExtra()">+ Ingreso extra</button><div class="card"><div class="bars">')};
+function ingresoExtra(){const C=S.cuentas.filter(c=>c.tipo!='credito'),d=$('#dlg');S.ce=C.length?cuentaDef():'none';
+ d.innerHTML=`<h3>Ingreso extra</h3><small class="m">Plata que te llegó aparte de tu pago de la semana.</small><input id="im" inputmode="numeric" placeholder="Monto" aria-label="Monto"><input id="in" placeholder="De qué es (ej. venta, regalo, devolución)" aria-label="Nota"><input id="ifc" type="date" value="${hoyS()}" aria-label="Fecha">${C.length?`<small class="m">¿A qué cuenta llegó?</small><div id="ic" class="chips">${C.map(c=>`<button class="chip ${c.id==S.ce?'on':''}" data-c="${c.id}" onclick="selIE('${c.id}')">${esc(c.nombre)}</button>`).join('')}<button class="chip" data-c="none" onclick="selIE('none')">Ya estaba en mi saldo</button></div>`:''}<div class="r2"><button class="btn2" onclick="this.closest('dialog').close()">Cancelar</button><button class="btn" onclick="guardaIE()">Guardar</button></div>`;d.onclose=null;d.showModal()}
+const selIE=id=>{S.ce=id;marca('#ic',id)};
+async function guardaIE(){const monto=parseM($('#im').value);if(!monto)return toast('Escribe el monto');const o={monto,nota:$('#in').value.trim()||null,fecha:$('#ifc').value||hoyS(),cuenta_id:S.ce&&S.ce!='none'?S.ce:null};if(o.cuenta_id)recuerda(o.cuenta_id);
+ const{error}=await SB.from('ingresos_extra').insert(o);if(error)return toast(error.message);$('#dlg').close();toast('Ingreso guardado');cargar()}
+async function delIE(id){await SB.from('ingresos_extra').delete().eq('id',id);cargar()}
 if(S.user)cargar();
